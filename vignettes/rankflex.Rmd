@@ -1,0 +1,419 @@
+---
+title: "rankflex"
+author: "Yang Li, Shiyu Xiong, Ruowei Fang"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rankflex}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 5,
+  warning  = FALSE,
+  message  = FALSE
+)
+```
+
+## Overview
+
+**rankflex** provides a flexible framework for integrating, aggregating, and
+visualizing rankings from multiple sources. The built-in sample dataset
+(`rankings_sample`) covers global university rankings from QS, Times Higher
+Education (THE), and ARWU across 2023–2025, but every function works with
+any ranked domain — films, restaurants, sports teams, and so on.
+
+The typical workflow is:
+
+```
+load_rankings()  ->  clean_rankings()  ->  merge_datasets()
+      ->  standardized_scores()  ->  compute_composite()
+      ->  compare_rankings() / sensitivity_analysis() / optimize_weights()
+      ->  plot_ranking_static() / plot_ranking_dynamic()
+```
+
+---
+
+## 1. The built-in dataset
+
+`rankings_sample` is a **long-format** data frame: each row is one
+university × one source × one year.  
+Indicator columns belonging to *other* sources are `NA` for that row
+(e.g. `score_teaching` is only filled for THE rows).
+
+```{r load}
+library(rankflex)
+data(rankings_sample)
+cat("Dimensions:", nrow(rankings_sample), "rows ×",
+    ncol(rankings_sample), "columns\n")
+cat("Sources:", paste(unique(rankings_sample$source), collapse = ", "), "\n")
+cat("Years  :", paste(sort(unique(rankings_sample$year)),  collapse = ", "), "\n")
+```
+
+```{r glimpse}
+head(rankings_sample[rankings_sample$source == "QS" &
+                     rankings_sample$year   == 2025,
+                     c("entity", "source", "rank",
+                       "score_overall", "score_academic_reputation",
+                       "score_teaching")], 5)
+```
+
+---
+
+## 2. Loading your own data
+
+`load_rankings()` reads a CSV or Excel file and attaches `source` / `year`
+metadata columns automatically. `load_data()` is the full version with extra
+options (encoding, row-skipping, arbitrary metadata).
+
+```{r load-demo, eval = FALSE}
+# Not run — replace with your own file paths
+qs_raw   <- load_rankings("qs_2025.csv",            source = "QS",   year = 2025)
+the_raw  <- load_rankings("THE_2016_to_2026.csv",   source = "THE",  year = 2025)
+arwu_raw <- load_rankings("all_years_combined.csv", source = "ARWU", year = 2025)
+```
+
+---
+
+## 3. Cleaning data
+
+`clean_data()` (alias: `clean_rankings()`) auto-detects entity / rank / score
+columns, cleans text encoding, converts rank strings like `"=1"` or
+`"101–150"` to integers, and drops rows with missing ranks.
+
+```{r clean}
+dirty <- data.frame(
+  university_name = c(" Harvard University ", " Stanford University ", ""),
+  ranking         = c("=1", "2", "3-5"),
+  total_score     = c("98.5", "97.2", "90+"),
+  stringsAsFactors = FALSE
+)
+cleaned <- clean_data(dirty, quiet = TRUE)
+cleaned
+```
+
+When starting from `rankings_sample` (already clean) you can skip this step.
+
+---
+
+## 4. Merging sources into wide format
+
+`merge_datasets()` pivots a list of data frames into a **wide table** with
+separate rank/score columns per source (e.g. `rank_QS`, `rank_THE`,
+`rank_ARWU`).
+
+> **Required columns:** each data frame in the list must contain
+> `entity`, `year`, `source`, `rank`, and **`score`**.  
+> `rankings_sample` stores the overall score as `score_overall`, so we must
+> create a `score` column first.
+
+```{r merge}
+qs_long   <- rankings_sample[rankings_sample$source == "QS",   ]
+the_long  <- rankings_sample[rankings_sample$source == "THE",  ]
+arwu_long <- rankings_sample[rankings_sample$source == "ARWU", ]
+
+qs_long$score   <- qs_long$score_overall
+the_long$score  <- the_long$score_overall
+arwu_long$score <- arwu_long$score_overall
+
+final_wide <- merge_datasets(
+  df_list = list(qs_long, the_long, arwu_long),
+  verbose = FALSE
+)
+
+cat("Wide table:", nrow(final_wide), "rows ×", ncol(final_wide), "columns\n")
+names(final_wide)
+```
+
+```{r merge-preview}
+df_2025 <- final_wide[final_wide$year == 2025, ]
+complete_2025 <- df_2025[
+  !is.na(df_2025$rank_QS) &
+  !is.na(df_2025$rank_THE) &
+  !is.na(df_2025$rank_ARWU), ]
+head(complete_2025[order(complete_2025$rank_QS),
+                   c("entity", "rank_QS", "rank_THE", "rank_ARWU")], 10)
+```
+
+---
+
+## 5. Standardizing scores & computing a composite
+
+### Why filter to one source first?
+
+`rankings_sample` is long format — the same university appears up to **three
+times per year**.  
+Each row only has indicator values for *its own* source; cross-source
+columns are `NA`. If you run `standardized_scores()` on the full dataset,
+most cells in the `_std` columns will be `NA`, and `compute_composite()` will
+return empty results.
+
+**Solution:** filter to a single source before standardizing and computing.
+
+```{r standardize}
+qs_df <- rankings_sample[rankings_sample$source == "QS", ]
+cat("QS rows:", nrow(qs_df), "\n")
+qs_indicators <- get_indicators(qs_df)
+cat("QS indicators:\n")
+cat(paste(" •", qs_indicators), sep = "\n")
+```
+
+```{r standardize-apply}
+chosen <- c(
+  "score_overall",
+  "score_academic_reputation",
+  "score_employer_reputation",
+  "score_faculty_student",
+  "score_citations_faculty",
+  "score_intl_students"
+)
+chosen <- chosen[chosen %in% names(qs_df)]
+qs_std <- standardized_scores(qs_df, indicators = chosen)
+std_cols <- paste0(chosen, "_std")
+sapply(qs_std[, std_cols, drop = FALSE],
+       function(x) round(range(x, na.rm = TRUE), 2))
+```
+
+### Compute composite scores
+
+```{r composite}
+weights <- c(
+  score_overall                = 0.25,
+  score_academic_reputation    = 0.25,
+  score_employer_reputation    = 0.15,
+  score_faculty_student        = 0.15,
+  score_citations_faculty      = 0.15,
+  score_intl_students          = 0.05
+)
+weights <- weights[names(weights) %in% chosen]
+composite_df <- compute_composite(qs_std, weights = weights)
+top10 <- composite_df[composite_df$year == 2025 &
+                      !is.na(composite_df$composite_rank), ]
+top10 <- top10[order(top10$composite_rank), ]
+head(top10[, c("entity", "rank", "composite_score", "composite_rank")], 10)
+```
+
+---
+
+## 6. Comparing composite vs. original rankings
+
+`compare_rankings()` adds a signed difference column and labels each
+university as `over_rated`, `under_rated`, or `same` *from the
+perspective of the original source*.
+
+```{r compare}
+comp_2025 <- composite_df[composite_df$year == 2025 &
+                           !is.na(composite_df$composite_rank), ]
+compared <- compare_rankings(comp_2025, source_ranks = "rank")
+
+under <- compared[compared$label_rank == "under_rated", ]
+under <- under[order(under$diff_rank), ]
+head(under[, c("entity", "rank", "composite_rank", "diff_rank")], 8)
+```
+
+```{r compare-over}
+over <- compared[compared$label_rank == "over_rated", ]
+over <- over[order(over$diff_rank, decreasing = TRUE), ]
+head(over[, c("entity", "rank", "composite_rank", "diff_rank")], 8)
+```
+
+---
+
+## 7. Sensitivity analysis
+
+`sensitivity_analysis()` perturbs the weights randomly (±20% by default)
+and reports how much each university's rank fluctuates. Low `sd_rank` means
+the ranking is robust across a wide range of weight choices.
+
+```{r sensitivity, message = TRUE}
+sa <- sensitivity_analysis(
+  data    = qs_std,
+  weights = weights,
+  n_sim   = 100,
+  top_n   = 15,
+  year    = 2025
+)
+sa
+```
+
+---
+
+## 8. Optimizing weights for a target university
+
+`optimize_weights()` uses linear programming (**lpSolve**) to find the
+weight vector that *maximizes* a given university's composite score,
+subject to weights summing to 1 and no single weight exceeding `max_weight`.
+
+```{r optimize, message = TRUE}
+# Which indicator set gives Peking University its best possible ranking?
+opt <- optimize_weights(
+  data       = qs_std,
+  target     = "Peking University",
+  indicators = chosen,
+  year       = 2025,
+  max_weight = 0.5,
+  top_n      = 20
+)
+cat("Optimal weights:\n")
+print(round(opt$optimal_weights, 4))
+cat(sprintf(
+  "\nPeking University under optimal weights:\n  Composite score : %.2f\n  Composite rank  : %d\n",
+  opt$target_score, opt$target_rank
+))
+```
+
+```{r optimize-table}
+head(opt$ranking[order(opt$ranking$composite_rank),
+                 c("entity", "composite_score", "composite_rank")], 10)
+```
+
+---
+
+## 9. Static visualization
+
+`plot_ranking_static()` returns a **ggplot2** horizontal bar chart of the
+top-ranked universities in a given year.
+
+```{r plot-static, fig.cap = "Top 20 universities by composite score (QS 2025)"}
+p <- plot_ranking_static(
+  composite_df,
+  year  = 2025,
+  top_n = 20,
+  title = "QS 2025 Top 20 Composite Scores"
+)
+p
+```
+
+---
+
+## 10. Animated ranking
+
+`plot_ranking_dynamic()` creates a racing bar chart showing how rankings
+evolve over the three years. It requires **gganimate** and **gifski**.
+
+```{r plot-dynamic, eval = FALSE}
+# install.packages(c("gganimate", "gifski"))   # if not yet installed
+anim <- plot_ranking_dynamic(composite_df, top_n = 10, fps = 5, duration = 10)
+gganimate::animate(anim, fps = 5, duration = 10)
+gganimate::anim_save("university_ranking_race.gif", anim)
+```
+
+---
+
+## 11. Using multiple sources together
+
+If you want a composite that draws on indicators from **QS, THE, and ARWU
+simultaneously**, join the wide table back to the long-format data, or
+build a merged indicator matrix manually.
+
+```{r multi-source}
+tri_source <- complete_2025[, c("entity", "year",
+                                "rank_QS", "rank_THE", "rank_ARWU",
+                                "score_QS", "score_THE", "score_ARWU")]
+
+tri_std <- standardized_scores(
+  tri_source,
+  indicators = c("score_QS", "score_THE", "score_ARWU")
+)
+
+tri_weights <- c(score_QS = 1/3, score_THE = 1/3, score_ARWU = 1/3)
+tri_composite <- compute_composite(tri_std, weights = tri_weights)
+
+tri_top <- tri_composite[!is.na(tri_composite$composite_rank), ]
+tri_top  <- tri_top[order(tri_top$composite_rank), ]
+head(tri_top[, c("entity", "rank_QS", "rank_THE", "rank_ARWU",
+                 "composite_score", "composite_rank")], 10)
+```
+
+---
+
+## Quick-reference: column name rules
+
+| Situation | What to pass |
+|-----------|-------------|
+| `standardized_scores(df, indicators)` | original column names, e.g. `"score_overall"` |
+| `compute_composite(df, weights)` | names of **weight vector** = original indicator names (no `_std`) |
+| `merge_datasets(df_list)` | each df must have `entity`, `year`, `source`, `rank`, **`score`** |
+| `compare_rankings(df, source_ranks)` | column name(s) of original rank, e.g. `"rank"` |
+| `sensitivity_analysis()` / `optimize_weights()` | same `_std`-equipped df as `compute_composite()` |
+
+---
+
+## Package advantages and course takeaways
+
+Developing **rankflex** brought together nearly every major topic covered in
+STA3005, and the process crystallised several important lessons about
+writing production-quality R code.
+
+**1. The pipe operator `%>%` makes multi-step pipelines readable.**  
+Functions like `compute_composite()` use `dplyr`'s `%>%` internally to
+chain `group_by()`, `mutate()`, and `ungroup()` into a single, readable
+expression. Without the pipe, deeply nested function calls become almost
+impossible to follow or debug. Writing the package made clear why `%>%` is
+a first-class citizen in modern R.
+
+**2. `ggplot2`'s grammar of graphics enables expressive, reusable charts.**  
+`plot_ranking_static()` and `plot_ranking_dynamic()` are built entirely with
+`ggplot2` layers — `geom_col()`, `geom_text()`, `coord_flip()`,
+`scale_fill_gradient()` — composing them like sentences. This declarative
+approach means adding a new visual element is a one-line change rather than
+a full rewrite, a stark contrast to base-R graphics.
+
+**3. Roxygen2 keeps code and documentation in sync.**  
+Writing `@param`, `@return`, and `@examples` tags directly above each
+function means documentation never drifts from the implementation.
+`devtools::document()` then auto-generates the NAMESPACE and `.Rd` files,
+eliminating a whole class of maintenance bugs that arise when docs live in
+separate files.
+
+**4. Separating concerns with internal helpers improves testability.**  
+The file-reading logic lives in the unexported `.safe_read_file()`, hidden
+from the user. This allowed `load_data()` behaviour — metadata attachment,
+error on a missing file — to be tested independently of encoding-detection
+complexity, a direct application of the single-responsibility principle.
+
+**5. `testthat` turns assumptions into guarantees.**  
+Before adding tests, a subtle bug lurked undetected: passing the full
+long-format `rankings_sample` to `compute_composite()` silently produced
+0 rows because cross-source `NA` values poisoned the `_std` columns.
+A test asserting `nrow(result) > 0` caught this immediately and forced a
+cleaner data-flow design (filter to one source before standardising).
+
+**6. Linear programming (`lpSolve`) turns an open question into a precise answer.**  
+`optimize_weights()` frames "what weighting scheme makes university X look
+best?" as an LP problem — maximise a linear objective subject to simplex
+constraints. This demonstrates that R packages need not be limited to
+estimation and inference; optimisation belongs here too.
+
+**7. `gganimate` extends the grammar of graphics to time.**  
+`plot_ranking_dynamic()` adds just three `gganimate` layers
+(`transition_states()`, `ease_aes()`, `enter_fade()`) to an otherwise
+standard `ggplot2` object to produce a racing bar chart. Because `gganimate`
+is built on top of `ggplot2`'s layer system, the conceptual leap from static
+to animated is surprisingly small.
+
+**8. Domain-agnostic design requires deliberate abstraction.**  
+Early versions hard-coded university-specific column names everywhere.
+Refactoring to accept user-supplied `entity_patterns`, `rank_patterns`, and
+`source` strings — and validating with synthetic non-university data —
+forced a clean separation between *what the function does* and *what the
+data means*, which is the essence of reusable software.
+
+**9. `dplyr` verbs express grouped operations more safely than base R.**  
+`compute_composite()` assigns composite ranks *within each year* using
+`group_by(year) %>% mutate(composite_rank = min_rank(-composite_score))`.
+The equivalent base-R approach with `ave()` or `tapply()` is more verbose
+and easier to get wrong when groups contain ties. `dplyr`'s verb-based API
+makes intent explicit and handles edge cases consistently.
+
+**10. `LazyData: true` and `usethis::use_data()` make bundled datasets frictionless.**  
+Packaging the cleaned `rankings_sample` dataset with
+`usethis::use_data(..., compress = "xz")` and declaring `LazyData: true` in
+DESCRIPTION gives users instant `data(rankings_sample)` access with zero
+loading overhead until the object is actually referenced — a small
+ergonomic detail that makes vignettes and examples dramatically easier to
+write and run.

@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Shiyu Xiong, Ruowei Fang, Yang Li" />
+
+
+<title>rankflex: Quick Tutorial</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">rankflex: Quick Tutorial</h1>
+<h4 class="author">Shiyu Xiong, Ruowei Fang, Yang Li</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><strong>rankflex</strong> provides a flexible framework for
+integrating, aggregating, and visualizing rankings from multiple
+sources. The built-in sample dataset (<code>rankings_sample</code>)
+covers global university rankings from QS, Times Higher Education (THE),
+and ARWU across 2023–2025, but every function works with any ranked
+domain — films, restaurants, sports teams, and so on.</p>
+<p>The typical workflow is:</p>
+<pre><code>load_rankings()  -&gt;  clean_rankings()  -&gt;  merge_datasets()
+      -&gt;  standardized_scores()  -&gt;  compute_composite()
+      -&gt;  compare_rankings() / sensitivity_analysis() / optimize_weights()
+      -&gt;  plot_ranking_static() / plot_ranking_dynamic()</code></pre>
+<hr />
+</div>
+<div id="the-built-in-dataset" class="section level2">
+<h2>1. The built-in dataset</h2>
+<p><code>rankings_sample</code> is a <strong>long-format</strong> data
+frame: each row is one university × one source × one year.<br />
+Indicator columns belonging to <em>other</em> sources are
+<code>NA</code> for that row (e.g. <code>score_teaching</code> is only
+filled for THE rows).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(rankflex)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">data</span>(rankings_sample)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Dimensions:&quot;</span>, <span class="fu">nrow</span>(rankings_sample), <span class="st">&quot;rows ×&quot;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="fu">ncol</span>(rankings_sample), <span class="st">&quot;columns</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; Dimensions: 13217 rows × 25 columns</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Sources:&quot;</span>, <span class="fu">paste</span>(<span class="fu">unique</span>(rankings_sample<span class="sc">$</span>source), <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; Sources: ARWU, QS, THE</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Years  :&quot;</span>, <span class="fu">paste</span>(<span class="fu">sort</span>(<span class="fu">unique</span>(rankings_sample<span class="sc">$</span>year)),  <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Years  : 2023, 2024, 2025</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">head</span>(rankings_sample[rankings_sample<span class="sc">$</span>source <span class="sc">==</span> <span class="st">&quot;QS&quot;</span> <span class="sc">&amp;</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>                     rankings_sample<span class="sc">$</span>year   <span class="sc">==</span> <span class="dv">2025</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>                     <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;source&quot;</span>, <span class="st">&quot;rank&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>                       <span class="st">&quot;score_overall&quot;</span>, <span class="st">&quot;score_academic_reputation&quot;</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                       <span class="st">&quot;score_teaching&quot;</span>)], <span class="dv">5</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;                                           entity source rank score_overall</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; 9623 Massachusetts Institute of Technology (MIT)     QS    1         100.0</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; 9624                     Imperial College London     QS    2          98.5</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; 9625                        University of Oxford     QS    3          96.9</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; 9626                          Harvard University     QS    4          96.8</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; 9627                     University of Cambridge     QS    5          96.7</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;      score_academic_reputation score_teaching</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; 9623                     100.0             NA</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; 9624                      98.5             NA</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; 9625                     100.0             NA</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; 9626                     100.0             NA</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; 9627                     100.0             NA</span></span></code></pre></div>
+<hr />
+</div>
+<div id="loading-your-own-data" class="section level2">
+<h2>2. Loading your own data</h2>
+<p><code>load_rankings()</code> reads a CSV or Excel file and attaches
+<code>source</code> / <code>year</code> metadata columns automatically.
+<code>load_data()</code> is the full version with extra options
+(encoding, row-skipping, arbitrary metadata).</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Not run — replace with your own file paths</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>qs_raw   <span class="ot">&lt;-</span> <span class="fu">load_rankings</span>(<span class="st">&quot;qs_2025.csv&quot;</span>,            <span class="at">source =</span> <span class="st">&quot;QS&quot;</span>,   <span class="at">year =</span> <span class="dv">2025</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>the_raw  <span class="ot">&lt;-</span> <span class="fu">load_rankings</span>(<span class="st">&quot;THE_2016_to_2026.csv&quot;</span>,   <span class="at">source =</span> <span class="st">&quot;THE&quot;</span>,  <span class="at">year =</span> <span class="dv">2025</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>arwu_raw <span class="ot">&lt;-</span> <span class="fu">load_rankings</span>(<span class="st">&quot;all_years_combined.csv&quot;</span>, <span class="at">source =</span> <span class="st">&quot;ARWU&quot;</span>, <span class="at">year =</span> <span class="dv">2025</span>)</span></code></pre></div>
+<hr />
+</div>
+<div id="cleaning-data" class="section level2">
+<h2>3. Cleaning data</h2>
+<p><code>clean_data()</code> (alias: <code>clean_rankings()</code>)
+auto-detects entity / rank / score columns, cleans text encoding,
+converts rank strings like <code>&quot;=1&quot;</code> or <code>&quot;101–150&quot;</code>
+to integers, and drops rows with missing ranks.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>dirty <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">university_name =</span> <span class="fu">c</span>(<span class="st">&quot; Harvard University &quot;</span>, <span class="st">&quot; Stanford University &quot;</span>, <span class="st">&quot;&quot;</span>),</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">ranking         =</span> <span class="fu">c</span>(<span class="st">&quot;=1&quot;</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;3-5&quot;</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">total_score     =</span> <span class="fu">c</span>(<span class="st">&quot;98.5&quot;</span>, <span class="st">&quot;97.2&quot;</span>, <span class="st">&quot;90+&quot;</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>cleaned <span class="ot">&lt;-</span> <span class="fu">clean_data</span>(dirty, <span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>cleaned</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;                entity rank score</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; 1  Harvard University    1  98.5</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; 2 Stanford University    2  97.2</span></span></code></pre></div>
+<p>When starting from <code>rankings_sample</code> (already clean) you
+can skip this step.</p>
+<hr />
+</div>
+<div id="merging-sources-into-wide-format" class="section level2">
+<h2>4. Merging sources into wide format</h2>
+<p><code>merge_datasets()</code> pivots a list of data frames into a
+<strong>wide table</strong> with separate rank/score columns per source
+(e.g. <code>rank_QS</code>, <code>rank_THE</code>,
+<code>rank_ARWU</code>).</p>
+<blockquote>
+<p><strong>Required columns:</strong> each data frame in the list must
+contain <code>entity</code>, <code>year</code>, <code>source</code>,
+<code>rank</code>, and <strong><code>score</code></strong>.<br />
+<code>rankings_sample</code> stores the overall score as
+<code>score_overall</code>, so we must create a <code>score</code>
+column first.</p>
+</blockquote>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>qs_long   <span class="ot">&lt;-</span> rankings_sample[rankings_sample<span class="sc">$</span>source <span class="sc">==</span> <span class="st">&quot;QS&quot;</span>,   ]</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>the_long  <span class="ot">&lt;-</span> rankings_sample[rankings_sample<span class="sc">$</span>source <span class="sc">==</span> <span class="st">&quot;THE&quot;</span>,  ]</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>arwu_long <span class="ot">&lt;-</span> rankings_sample[rankings_sample<span class="sc">$</span>source <span class="sc">==</span> <span class="st">&quot;ARWU&quot;</span>, ]</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>qs_long<span class="sc">$</span>score   <span class="ot">&lt;-</span> qs_long<span class="sc">$</span>score_overall</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>the_long<span class="sc">$</span>score  <span class="ot">&lt;-</span> the_long<span class="sc">$</span>score_overall</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>arwu_long<span class="sc">$</span>score <span class="ot">&lt;-</span> arwu_long<span class="sc">$</span>score_overall</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>final_wide <span class="ot">&lt;-</span> <span class="fu">merge_datasets</span>(</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="at">df_list =</span> <span class="fu">list</span>(qs_long, the_long, arwu_long),</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; ========================================</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; Creating wide table...</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; ========================================</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Wide table:&quot;</span>, <span class="fu">nrow</span>(final_wide), <span class="st">&quot;rows ×&quot;</span>, <span class="fu">ncol</span>(final_wide), <span class="st">&quot;columns</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; Wide table: 9056 rows × 8 columns</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="fu">names</span>(final_wide)</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; [1] &quot;entity&quot;     &quot;year&quot;       &quot;rank_ARWU&quot;  &quot;rank_QS&quot;    &quot;rank_THE&quot;  </span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; [6] &quot;score_ARWU&quot; &quot;score_QS&quot;   &quot;score_THE&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>df_2025 <span class="ot">&lt;-</span> final_wide[final_wide<span class="sc">$</span>year <span class="sc">==</span> <span class="dv">2025</span>, ]</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>complete_2025 <span class="ot">&lt;-</span> df_2025[</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="sc">!</span><span class="fu">is.na</span>(df_2025<span class="sc">$</span>rank_QS) <span class="sc">&amp;</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="sc">!</span><span class="fu">is.na</span>(df_2025<span class="sc">$</span>rank_THE) <span class="sc">&amp;</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="sc">!</span><span class="fu">is.na</span>(df_2025<span class="sc">$</span>rank_ARWU), ]</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="fu">head</span>(complete_2025[<span class="fu">order</span>(complete_2025<span class="sc">$</span>rank_QS),</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>                   <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;rank_QS&quot;</span>, <span class="st">&quot;rank_THE&quot;</span>, <span class="st">&quot;rank_ARWU&quot;</span>)], <span class="dv">10</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt;                          entity rank_QS rank_THE rank_ARWU</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; 6554    Imperial College London       2        9        26</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; 8648       University of Oxford       3        1         6</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; 6481         Harvard University       4        3         1</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; 8315    University of Cambridge       5        5         4</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; 7560        Stanford University       6        6         2</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; 8662 University of Pennsylvania      11       14        15</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; 7238          Peking University      14       13        23</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; 6222         Cornell University      16       20        12</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; 7789        Tsinghua University      20       12        18</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; 7310       Princeton University      22        4         7</span></span></code></pre></div>
+<hr />
+</div>
+<div id="standardizing-scores-computing-a-composite" class="section level2">
+<h2>5. Standardizing scores &amp; computing a composite</h2>
+<div id="why-filter-to-one-source-first" class="section level3">
+<h3>Why filter to one source first?</h3>
+<p><code>rankings_sample</code> is long format — the same university
+appears up to <strong>three times per year</strong>.<br />
+Each row only has indicator values for <em>its own</em> source;
+cross-source columns are <code>NA</code>. If you run
+<code>standardized_scores()</code> on the full dataset, most cells in
+the <code>_std</code> columns will be <code>NA</code>, and
+<code>compute_composite()</code> will return empty results.</p>
+<p><strong>Solution:</strong> filter to a single source before
+standardizing and computing.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>qs_df <span class="ot">&lt;-</span> rankings_sample[rankings_sample<span class="sc">$</span>source <span class="sc">==</span> <span class="st">&quot;QS&quot;</span>, ]</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;QS rows:&quot;</span>, <span class="fu">nrow</span>(qs_df), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; QS rows: 4422</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>qs_indicators <span class="ot">&lt;-</span> <span class="fu">get_indicators</span>(qs_df)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;QS indicators:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; QS indicators:</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">&quot; •&quot;</span>, qs_indicators), <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt;  • rank</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt;  • score_academic_reputation</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt;  • score_employer_reputation</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt;  • score_faculty_student</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt;  • score_citations_faculty</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt;  • score_intl_faculty</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt;  • score_intl_students</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt;  • score_intl_research_network</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt;  • score_employment_outcomes</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt;  • score_sustainability</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt;  • score_overall</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt;  • score_teaching</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt;  • score_research_environment</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt;  • score_research_quality</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt;  • score_industry</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt;  • score_intl_outlook</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt;  • score_alumni</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt;  • score_award</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt;  • score_hici</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt;  • score_ns</span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt;  • score_pub</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt;  • score_pcp</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>chosen <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="st">&quot;score_overall&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="st">&quot;score_academic_reputation&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="st">&quot;score_employer_reputation&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="st">&quot;score_faculty_student&quot;</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="st">&quot;score_citations_faculty&quot;</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="st">&quot;score_intl_students&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>chosen <span class="ot">&lt;-</span> chosen[chosen <span class="sc">%in%</span> <span class="fu">names</span>(qs_df)]</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>qs_std <span class="ot">&lt;-</span> <span class="fu">standardized_scores</span>(qs_df, <span class="at">indicators =</span> chosen)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>std_cols <span class="ot">&lt;-</span> <span class="fu">paste0</span>(chosen, <span class="st">&quot;_std&quot;</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="fu">sapply</span>(qs_std[, std_cols, <span class="at">drop =</span> <span class="cn">FALSE</span>],</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>       <span class="cf">function</span>(x) <span class="fu">round</span>(<span class="fu">range</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">2</span>))</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt;      score_overall_std score_academic_reputation_std</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; [1,]                 0                             0</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; [2,]               100                           100</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt;      score_employer_reputation_std score_faculty_student_std</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; [1,]                             0                         0</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; [2,]                           100                       100</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;      score_citations_faculty_std score_intl_students_std</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; [1,]                           0                       0</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; [2,]                         100                     100</span></span></code></pre></div>
+</div>
+<div id="compute-composite-scores" class="section level3">
+<h3>Compute composite scores</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>weights <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="at">score_overall                =</span> <span class="fl">0.25</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">score_academic_reputation    =</span> <span class="fl">0.25</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">score_employer_reputation    =</span> <span class="fl">0.15</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="at">score_faculty_student        =</span> <span class="fl">0.15</span>,</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="at">score_citations_faculty      =</span> <span class="fl">0.15</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="at">score_intl_students          =</span> <span class="fl">0.05</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>)</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>weights <span class="ot">&lt;-</span> weights[<span class="fu">names</span>(weights) <span class="sc">%in%</span> chosen]</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>composite_df <span class="ot">&lt;-</span> <span class="fu">compute_composite</span>(qs_std, <span class="at">weights =</span> weights)</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> composite_df[composite_df<span class="sc">$</span>year <span class="sc">==</span> <span class="dv">2025</span> <span class="sc">&amp;</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>                      <span class="sc">!</span><span class="fu">is.na</span>(composite_df<span class="sc">$</span>composite_rank), ]</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>top10 <span class="ot">&lt;-</span> top10[<span class="fu">order</span>(top10<span class="sc">$</span>composite_rank), ]</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="fu">head</span>(top10[, <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;rank&quot;</span>, <span class="st">&quot;composite_score&quot;</span>, <span class="st">&quot;composite_rank&quot;</span>)], <span class="dv">10</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; # A tibble: 10 × 4</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">#&gt;    entity                                    rank composite_score composite_rank</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;                                    &lt;int&gt;           &lt;dbl&gt;          &lt;int&gt;</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;  1 Massachusetts Institute of Technology (…     1            99.3              1</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt;  2 Imperial College London                      2            97.9              2</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt;  3 Harvard University                           4            96.9              3</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt;  4 Stanford University                          6            96.7              4</span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt;  5 University of Oxford                         3            96.6              5</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt;  6 University of Cambridge                      5            96.4              6</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt;  7 California Institute of Technology (Cal…    10            94.5              7</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt;  8 UCL                                          9            92.2              8</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt;  9 Peking University                           14            90.4              9</span></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co">#&gt; 10 ETH Zurich - Swiss Federal Institute of…     7            90.3             10</span></span></code></pre></div>
+<hr />
+</div>
+</div>
+<div id="comparing-composite-vs.-original-rankings" class="section level2">
+<h2>6. Comparing composite vs. original rankings</h2>
+<p><code>compare_rankings()</code> adds a signed difference column and
+labels each university as <code>over_rated</code>,
+<code>under_rated</code>, or <code>same</code> <em>from the perspective
+of the original source</em>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>comp_2025 <span class="ot">&lt;-</span> composite_df[composite_df<span class="sc">$</span>year <span class="sc">==</span> <span class="dv">2025</span> <span class="sc">&amp;</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>                           <span class="sc">!</span><span class="fu">is.na</span>(composite_df<span class="sc">$</span>composite_rank), ]</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>compared <span class="ot">&lt;-</span> <span class="fu">compare_rankings</span>(comp_2025, <span class="at">source_ranks =</span> <span class="st">&quot;rank&quot;</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>under <span class="ot">&lt;-</span> compared[compared<span class="sc">$</span>label_rank <span class="sc">==</span> <span class="st">&quot;under_rated&quot;</span>, ]</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>under <span class="ot">&lt;-</span> under[<span class="fu">order</span>(under<span class="sc">$</span>diff_rank), ]</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="fu">head</span>(under[, <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;rank&quot;</span>, <span class="st">&quot;composite_rank&quot;</span>, <span class="st">&quot;diff_rank&quot;</span>)], <span class="dv">8</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 8 × 4</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt;   entity                                           rank composite_rank diff_rank</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                                           &lt;int&gt;          &lt;int&gt;     &lt;int&gt;</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; 1 University of Chemistry and Technology, Prague    570            384      -186</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt; 2 MGIMO University                                  567            382      -185</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; 3 National Research Tomsk Polytechnic University    576            406      -170</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; 4 ITMO University                                   595            431      -164</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; 5 Tashkent Institute of Irrigation and Agricultu…   547            390      -157</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; 6 Sogang University                                 576            429      -147</span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#&gt; 7 Universidad Austral                               524            380      -144</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; 8 Tomsk State University                            431            295      -136</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>over <span class="ot">&lt;-</span> compared[compared<span class="sc">$</span>label_rank <span class="sc">==</span> <span class="st">&quot;over_rated&quot;</span>, ]</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>over <span class="ot">&lt;-</span> over[<span class="fu">order</span>(over<span class="sc">$</span>diff_rank, <span class="at">decreasing =</span> <span class="cn">TRUE</span>), ]</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">head</span>(over[, <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;rank&quot;</span>, <span class="st">&quot;composite_rank&quot;</span>, <span class="st">&quot;diff_rank&quot;</span>)], <span class="dv">8</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 8 × 4</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt;   entity                       rank composite_rank diff_rank</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;                       &lt;int&gt;          &lt;int&gt;     &lt;int&gt;</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; 1 Concordia University          415            555       140</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; 2 Western Sydney University     384            520       136</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; 3 York University               362            472       110</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; 4 University of Witwatersrand   267            376       109</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; 5 University of Pretoria        354            462       108</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; 6 Aston University              423            529       106</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; 7 University of Saskatchewan    340            442       102</span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; 8 Université de Liège           396            498       102</span></span></code></pre></div>
+<hr />
+</div>
+<div id="sensitivity-analysis" class="section level2">
+<h2>7. Sensitivity analysis</h2>
+<p><code>sensitivity_analysis()</code> perturbs the weights randomly
+(±20% by default) and reports how much each university’s rank
+fluctuates. Low <code>sd_rank</code> means the ranking is robust across
+a wide range of weight choices.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>sa <span class="ot">&lt;-</span> <span class="fu">sensitivity_analysis</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  <span class="at">data    =</span> qs_std,</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="at">weights =</span> weights,</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="at">n_sim   =</span> <span class="dv">100</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="at">top_n   =</span> <span class="dv">15</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="at">year    =</span> <span class="dv">2025</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt; Running 100 simulations...</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; sensitivity_analysis() done. Low sd_rank = stable ranking regardless of weights.</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>sa</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt;                                                entity base_rank mean_rank</span></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; 1         Massachusetts Institute of Technology (MIT)         1       1.0</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="co">#&gt; 2                             Imperial College London         2       2.0</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co">#&gt; 3                                  Harvard University         3       3.2</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a><span class="co">#&gt; 4                                 Stanford University         4       4.6</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="co">#&gt; 5                                University of Oxford         5       4.4</span></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co">#&gt; 6                             University of Cambridge         6       5.8</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co">#&gt; 7        California Institute of Technology (Caltech)         7       7.0</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a><span class="co">#&gt; 8                                                 UCL         8       8.0</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="co">#&gt; 9                                   Peking University         9       9.7</span></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a><span class="co">#&gt; 10 ETH Zurich - Swiss Federal Institute of Technology        10      10.4</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a><span class="co">#&gt; 11             National University of Singapore (NUS)        11      10.9</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a><span class="co">#&gt; 12                                Tsinghua University        12      11.2</span></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="co">#&gt; 13                         University of Pennsylvania        13      12.7</span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a><span class="co">#&gt; 14                              University of Chicago        14      14.2</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt; 15                               Princeton University        15      15.1</span></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt;    sd_rank min_rank max_rank rank_range</span></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a><span class="co">#&gt; 1      0.0        1        1          0</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="co">#&gt; 2      0.0        2        2          0</span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a><span class="co">#&gt; 3      0.5        3        5          2</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a><span class="co">#&gt; 4      0.8        4        6          2</span></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a><span class="co">#&gt; 5      0.8        3        5          2</span></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a><span class="co">#&gt; 6      0.5        4        6          2</span></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="co">#&gt; 7      0.0        7        7          0</span></span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a><span class="co">#&gt; 8      0.0        8        8          0</span></span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a><span class="co">#&gt; 9      1.0        9       11          2</span></span>
+<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a><span class="co">#&gt; 10     1.3        9       13          4</span></span>
+<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a><span class="co">#&gt; 11     0.9        9       13          4</span></span>
+<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a><span class="co">#&gt; 12     1.1       10       13          3</span></span>
+<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a><span class="co">#&gt; 13     0.7       10       13          3</span></span>
+<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a><span class="co">#&gt; 14     0.4       14       15          1</span></span>
+<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a><span class="co">#&gt; 15     0.9       14       20          6</span></span></code></pre></div>
+<hr />
+</div>
+<div id="optimizing-weights-for-a-target-university" class="section level2">
+<h2>8. Optimizing weights for a target university</h2>
+<p><code>optimize_weights()</code> uses linear programming
+(<strong>lpSolve</strong>) to find the weight vector that
+<em>maximizes</em> a given university’s composite score, subject to
+weights summing to 1 and no single weight exceeding
+<code>max_weight</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Which indicator set gives Peking University its best possible ranking?</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>opt <span class="ot">&lt;-</span> <span class="fu">optimize_weights</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  <span class="at">data       =</span> qs_std,</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="at">target     =</span> <span class="st">&quot;Peking University&quot;</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  <span class="at">indicators =</span> chosen,</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="at">year       =</span> <span class="dv">2025</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  <span class="at">max_weight =</span> <span class="fl">0.5</span>,</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>  <span class="at">top_n      =</span> <span class="dv">20</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>)</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co">#&gt; optimize_weights() done.</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt;   Target: Peking University</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt;   Year:   2025</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt;   Optimal rank:  7</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt;   Optimal score: 98.59</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt;   Non-zero weights (2/6):</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="co">#&gt;     score_academic_reputation                     0.5000</span></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co">#&gt;     score_citations_faculty                       0.5000</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Optimal weights:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt; Optimal weights:</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(opt<span class="sc">$</span>optimal_weights, <span class="dv">4</span>))</span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt; score_academic_reputation   score_citations_faculty </span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="co">#&gt;                       0.5                       0.5</span></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(</span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>  <span class="st">&quot;</span><span class="sc">\n</span><span class="st">Peking University under optimal weights:</span><span class="sc">\n</span><span class="st">  Composite score : %.2f</span><span class="sc">\n</span><span class="st">  Composite rank  : %d</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>  opt<span class="sc">$</span>target_score, opt<span class="sc">$</span>target_rank</span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>))</span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt; Peking University under optimal weights:</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt;   Composite score : 98.59</span></span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt;   Composite rank  : 7</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">head</span>(opt<span class="sc">$</span>ranking[<span class="fu">order</span>(opt<span class="sc">$</span>ranking<span class="sc">$</span>composite_rank),</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>                 <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;composite_score&quot;</span>, <span class="st">&quot;composite_rank&quot;</span>)], <span class="dv">10</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 10 × 3</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co">#&gt;    entity                                         composite_score composite_rank</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;                                                    &lt;dbl&gt;          &lt;int&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co">#&gt;  1 Massachusetts Institute of Technology (MIT)              100                1</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt;  2 Harvard University                                       100                1</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt;  3 Princeton University                                      99.9              3</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt;  4 Stanford University                                       99.5              4</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt;  5 Tsinghua University                                       99.1              5</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="co">#&gt;  6 University of California, Berkeley (UCB)                  99.1              6</span></span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co">#&gt;  7 Peking University                                         98.6              7</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co">#&gt;  8 ETH Zurich - Swiss Federal Institute of Techn…            98.3              8</span></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="co">#&gt;  9 California Institute of Technology (Caltech)              98.2              9</span></span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#&gt; 10 Cornell University                                        97.9             10</span></span></code></pre></div>
+<hr />
+</div>
+<div id="static-visualization" class="section level2">
+<h2>9. Static visualization</h2>
+<p><code>plot_ranking_static()</code> returns a <strong>ggplot2</strong>
+horizontal bar chart of the top-ranked universities in a given year.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">plot_ranking_static</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>  composite_df,</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>  <span class="at">year  =</span> <span class="dv">2025</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="at">top_n =</span> <span class="dv">20</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;QS 2025 Top 20 Composite Scores&quot;</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>)</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>p</span></code></pre></div>
+<div class="float">
+<img role="img" aria-label="Top 20 universities by composite score (QS 2025)" src="data:image/png;base64,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" alt="Top 20 universities by composite score (QS 2025)" />
+<div class="figcaption">Top 20 universities by composite score (QS
+2025)</div>
+</div>
+<hr />
+</div>
+<div id="animated-ranking" class="section level2">
+<h2>10. Animated ranking</h2>
+<p><code>plot_ranking_dynamic()</code> creates a racing bar chart
+showing how rankings evolve over the three years. It requires
+<strong>gganimate</strong> and <strong>gifski</strong>.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># install.packages(c(&quot;gganimate&quot;, &quot;gifski&quot;))   # if not yet installed</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>anim <span class="ot">&lt;-</span> <span class="fu">plot_ranking_dynamic</span>(composite_df, <span class="at">top_n =</span> <span class="dv">10</span>, <span class="at">fps =</span> <span class="dv">5</span>, <span class="at">duration =</span> <span class="dv">10</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>gganimate<span class="sc">::</span><span class="fu">animate</span>(anim, <span class="at">fps =</span> <span class="dv">5</span>, <span class="at">duration =</span> <span class="dv">10</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>gganimate<span class="sc">::</span><span class="fu">anim_save</span>(<span class="st">&quot;university_ranking_race.gif&quot;</span>, anim)</span></code></pre></div>
+<hr />
+</div>
+<div id="using-multiple-sources-together" class="section level2">
+<h2>11. Using multiple sources together</h2>
+<p>If you want a composite that draws on indicators from <strong>QS,
+THE, and ARWU simultaneously</strong>, join the wide table back to the
+long-format data, or build a merged indicator matrix manually.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>tri_source <span class="ot">&lt;-</span> complete_2025[, <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;year&quot;</span>,</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>                                <span class="st">&quot;rank_QS&quot;</span>, <span class="st">&quot;rank_THE&quot;</span>, <span class="st">&quot;rank_ARWU&quot;</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>                                <span class="st">&quot;score_QS&quot;</span>, <span class="st">&quot;score_THE&quot;</span>, <span class="st">&quot;score_ARWU&quot;</span>)]</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>tri_std <span class="ot">&lt;-</span> <span class="fu">standardized_scores</span>(</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>  tri_source,</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>  <span class="at">indicators =</span> <span class="fu">c</span>(<span class="st">&quot;score_QS&quot;</span>, <span class="st">&quot;score_THE&quot;</span>, <span class="st">&quot;score_ARWU&quot;</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>)</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>tri_weights <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">score_QS =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">score_THE =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">score_ARWU =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">3</span>)</span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>tri_composite <span class="ot">&lt;-</span> <span class="fu">compute_composite</span>(tri_std, <span class="at">weights =</span> tri_weights)</span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a>tri_top <span class="ot">&lt;-</span> tri_composite[<span class="sc">!</span><span class="fu">is.na</span>(tri_composite<span class="sc">$</span>composite_rank), ]</span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>tri_top  <span class="ot">&lt;-</span> tri_top[<span class="fu">order</span>(tri_top<span class="sc">$</span>composite_rank), ]</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="fu">head</span>(tri_top[, <span class="fu">c</span>(<span class="st">&quot;entity&quot;</span>, <span class="st">&quot;rank_QS&quot;</span>, <span class="st">&quot;rank_THE&quot;</span>, <span class="st">&quot;rank_ARWU&quot;</span>,</span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>                 <span class="st">&quot;composite_score&quot;</span>, <span class="st">&quot;composite_rank&quot;</span>)], <span class="dv">10</span>)</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 10 × 6</span></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a><span class="co">#&gt;    entity              rank_QS rank_THE rank_ARWU composite_score composite_rank</span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;                 &lt;int&gt;    &lt;int&gt;     &lt;int&gt;           &lt;dbl&gt;          &lt;int&gt;</span></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a><span class="co">#&gt;  1 Harvard University        4        3         1            98.9              1</span></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="co">#&gt;  2 Stanford University       6        6         2            90.2              2</span></span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="co">#&gt;  3 University of Camb…       5        5         4            87.6              3</span></span>
+<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a><span class="co">#&gt;  4 University of Oxfo…       3        1         6            85.5              4</span></span>
+<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a><span class="co">#&gt;  5 Princeton Universi…      22        4         7            79.6              5</span></span>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a><span class="co">#&gt;  6 Imperial College L…       2        9        26            77.1              6</span></span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a><span class="co">#&gt;  7 Yale University          23       10        11            76.0              7</span></span>
+<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a><span class="co">#&gt;  8 University of Penn…      11       14        15            74.9              8</span></span>
+<span id="cb18-28"><a href="#cb18-28" tabindex="-1"></a><span class="co">#&gt;  9 Cornell University       16       20        12            73.6              9</span></span>
+<span id="cb18-29"><a href="#cb18-29" tabindex="-1"></a><span class="co">#&gt; 10 Columbia University      34       19         8            73.4             10</span></span></code></pre></div>
+<hr />
+</div>
+<div id="quick-reference-column-name-rules" class="section level2">
+<h2>Quick-reference: column name rules</h2>
+<table>
+<colgroup>
+<col width="45%" />
+<col width="54%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Situation</th>
+<th>What to pass</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>standardized_scores(df, indicators)</code></td>
+<td>original column names, e.g. <code>&quot;score_overall&quot;</code></td>
+</tr>
+<tr class="even">
+<td><code>compute_composite(df, weights)</code></td>
+<td>names of <strong>weight vector</strong> = original indicator names
+(no <code>_std</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>merge_datasets(df_list)</code></td>
+<td>each df must have <code>entity</code>, <code>year</code>,
+<code>source</code>, <code>rank</code>,
+<strong><code>score</code></strong></td>
+</tr>
+<tr class="even">
+<td><code>compare_rankings(df, source_ranks)</code></td>
+<td>column name(s) of original rank, e.g. <code>&quot;rank&quot;</code></td>
+</tr>
+<tr class="odd">
+<td><code>sensitivity_analysis()</code> /
+<code>optimize_weights()</code></td>
+<td>same <code>_std</code>-equipped df as
+<code>compute_composite()</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+<div id="package-advantages-and-course-takeaways" class="section level2">
+<h2>Package advantages and course takeaways</h2>
+<p>Developing <strong>rankflex</strong> brought together nearly every
+major topic covered in STA3005, and the process crystallised several
+important lessons about writing production-quality R code.</p>
+<p><strong>1. The pipe operator <code>%&gt;%</code> makes multi-step
+pipelines readable.</strong><br />
+Functions like <code>compute_composite()</code> use <code>dplyr</code>’s
+<code>%&gt;%</code> internally to chain <code>group_by()</code>,
+<code>mutate()</code>, and <code>ungroup()</code> into a single,
+readable expression. Without the pipe, deeply nested function calls
+become almost impossible to follow or debug. Writing the package made
+clear why <code>%&gt;%</code> is a first-class citizen in modern R.</p>
+<p><strong>2. <code>ggplot2</code>’s grammar of graphics enables
+expressive, reusable charts.</strong><br />
+<code>plot_ranking_static()</code> and
+<code>plot_ranking_dynamic()</code> are built entirely with
+<code>ggplot2</code> layers — <code>geom_col()</code>,
+<code>geom_text()</code>, <code>coord_flip()</code>,
+<code>scale_fill_gradient()</code> — composing them like sentences. This
+declarative approach means adding a new visual element is a one-line
+change rather than a full rewrite, a stark contrast to base-R
+graphics.</p>
+<p><strong>3. Roxygen2 keeps code and documentation in
+sync.</strong><br />
+Writing <code>@param</code>, <code>@return</code>, and
+<code>@examples</code> tags directly above each function means
+documentation never drifts from the implementation.
+<code>devtools::document()</code> then auto-generates the NAMESPACE and
+<code>.Rd</code> files, eliminating a whole class of maintenance bugs
+that arise when docs live in separate files.</p>
+<p><strong>4. Separating concerns with internal helpers improves
+testability.</strong><br />
+The file-reading logic lives in the unexported
+<code>.safe_read_file()</code>, hidden from the user. This allowed
+<code>load_data()</code> behaviour — metadata attachment, error on a
+missing file — to be tested independently of encoding-detection
+complexity, a direct application of the single-responsibility
+principle.</p>
+<p><strong>5. <code>testthat</code> turns assumptions into
+guarantees.</strong><br />
+Before adding tests, a subtle bug lurked undetected: passing the full
+long-format <code>rankings_sample</code> to
+<code>compute_composite()</code> silently produced 0 rows because
+cross-source <code>NA</code> values poisoned the <code>_std</code>
+columns. A test asserting <code>nrow(result) &gt; 0</code> caught this
+immediately and forced a cleaner data-flow design (filter to one source
+before standardising).</p>
+<p><strong>6. Linear programming (<code>lpSolve</code>) turns an open
+question into a precise answer.</strong><br />
+<code>optimize_weights()</code> frames “what weighting scheme makes
+university X look best?” as an LP problem — maximise a linear objective
+subject to simplex constraints. This demonstrates that R packages need
+not be limited to estimation and inference; optimisation belongs here
+too.</p>
+<p><strong>7. <code>gganimate</code> extends the grammar of graphics to
+time.</strong><br />
+<code>plot_ranking_dynamic()</code> adds just three
+<code>gganimate</code> layers (<code>transition_states()</code>,
+<code>ease_aes()</code>, <code>enter_fade()</code>) to an otherwise
+standard <code>ggplot2</code> object to produce a racing bar chart.
+Because <code>gganimate</code> is built on top of <code>ggplot2</code>’s
+layer system, the conceptual leap from static to animated is
+surprisingly small.</p>
+<p><strong>8. Domain-agnostic design requires deliberate
+abstraction.</strong><br />
+Early versions hard-coded university-specific column names everywhere.
+Refactoring to accept user-supplied <code>entity_patterns</code>,
+<code>rank_patterns</code>, and <code>source</code> strings — and
+validating with synthetic non-university data — forced a clean
+separation between <em>what the function does</em> and <em>what the data
+means</em>, which is the essence of reusable software.</p>
+<p><strong>9. <code>dplyr</code> verbs express grouped operations more
+safely than base R.</strong><br />
+<code>compute_composite()</code> assigns composite ranks <em>within each
+year</em> using
+<code>group_by(year) %&gt;% mutate(composite_rank = min_rank(-composite_score))</code>.
+The equivalent base-R approach with <code>ave()</code> or
+<code>tapply()</code> is more verbose and easier to get wrong when
+groups contain ties. <code>dplyr</code>’s verb-based API makes intent
+explicit and handles edge cases consistently.</p>
+<p><strong>10. <code>LazyData: true</code> and
+<code>usethis::use_data()</code> make bundled datasets
+frictionless.</strong><br />
+Packaging the cleaned <code>rankings_sample</code> dataset with
+<code>usethis::use_data(..., compress = &quot;xz&quot;)</code> and declaring
+<code>LazyData: true</code> in DESCRIPTION gives users instant
+<code>data(rankings_sample)</code> access with zero loading overhead
+until the object is actually referenced — a small ergonomic detail that
+makes vignettes and examples dramatically easier to write and run.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

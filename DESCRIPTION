@@ -1,0 +1,44 @@
+Package: rankflex
+Title: Flexible Framework for Multi-Source Ranking Aggregation and Visualization
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Yang", "Li", , "124020251@link.cuhk.edu.cn", role = c("aut", "cre")), 
+    person("Shiyu", "Xiong", , "123090673@link.cuhk.edu.cn", role = "aut"), 
+    person("Ruowei", "Fang", , "122090862@link.cuhk.edu.cn", role = "aut")
+    )
+Description: Provides a general-purpose framework for integrating, aggregating, and 
+    visualizing rankings from multiple sources. Users can import ranking data from 
+    any domain (e.g., university rankings, movie ratings, or sports standings), clean 
+    and standardize multi-source data, and apply custom weights to available indicators 
+    to construct personalized composite scores. The package supports sensitivity 
+    analysis of weighting schemes, weight optimization via linear programming to 
+    maximize a target entity's composite ranking, comparison of custom rankings against 
+    original sources to identify over- and under-rated items, and visualization through 
+    both static snapshots and animated multi-year bar chart dynamics. A sample dataset 
+    of global university rankings (QS, Times Higher Education, and ARWU, 2023–2025) 
+    is included as a demonstration use case.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 4.1.0)
+Imports:
+    dplyr,
+    ggplot2,
+    gganimate,
+    stringr,
+    readxl,
+    lpSolve,
+    magrittr
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown,
+    gifski,
+    stringi,
+    readr,
+    data.table
+VignetteBuilder: knitr
+LazyData: true
+Config/testthat/edition: 3
