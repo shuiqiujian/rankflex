@@ -74,6 +74,8 @@ compared <- compare_rankings(composite, source_ranks = "rank")
 head(compared[order(compared$diff_rank), 
               c("entity", "rank", "composite_rank", "diff_rank", "label_rank")], 10)
 ```
+![Top 20 Universities - Composite Ranking (2025)](man/figures/ranking_plot.png)
+
 ---
 
 ## Core Features
