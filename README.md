@@ -92,4 +92,4 @@ head(compared[order(compared$diff_rank),
  
 ## About the Author
  
-Undergraduate student at CUHK-Shenzhen, passionate about data analytics, operations research, and building practical tools with R.
+Undergraduate students at CUHK-Shenzhen, passionate about data analytics, operations research, and building practical tools with R.
